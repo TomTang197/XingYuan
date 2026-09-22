@@ -5,7 +5,7 @@ public struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allAssets: [AssetItem]
     
-    @State private var sidebarSelection: SidebarDestination = .allAssets
+    @State private var sidebarSelection: SidebarDestination = .status(.active)
     @State private var searchText: String = ""
     @State private var viewMode: String = "grid" // "grid" or "table"
     @State private var sortOption: String = "dailyAsc"
