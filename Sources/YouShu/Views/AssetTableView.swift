@@ -172,6 +172,18 @@ public struct AssetTableView: View {
         .onChange(of: selectedID) { _, newID in
             if let id = newID {
                 selectedAsset = assets.first(where: { $0.id == id })
+            } else {
+                selectedAsset = nil
+            }
+        }
+        .onChange(of: selectedAsset) { _, newAsset in
+            if selectedID != newAsset?.id {
+                selectedID = newAsset?.id
+            }
+        }
+        .onAppear {
+            if selectedID != selectedAsset?.id {
+                selectedID = selectedAsset?.id
             }
         }
     }

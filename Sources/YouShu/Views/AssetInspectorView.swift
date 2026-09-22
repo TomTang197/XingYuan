@@ -10,6 +10,7 @@ public struct AssetInspectorView: View {
     @State private var newExpenseTitle: String = ""
     @State private var newExpenseAmount: String = ""
     @State private var showAddExpense: Bool = false
+    @State private var isCloseHovered: Bool = false
     
     public init(
         asset: AssetItem,
@@ -30,45 +31,68 @@ public struct AssetInspectorView: View {
         let remaining = AssetCalculator.targetDaysRemaining(for: asset)
         let curvePoints = AssetCalculator.costDecayCurve(for: asset)
         
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Header with close and edit
-                HStack(alignment: .top) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color(nsColor: .controlBackgroundColor))
-                            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
-                        
-                        Image(systemName: asset.iconName)
-                            .font(.system(size: 32))
-                            .foregroundColor(asset.status.color)
-                    }
-                    .frame(width: 60, height: 60)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(asset.name)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.primary)
-                        
-                        HStack(spacing: 6) {
-                            StatusBadge(asset.status)
-                            Text(asset.category)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        onClose()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
+        VStack(spacing: 0) {
+            // 顶部常驻工具栏 (固定在顶部，不随内容滚动)
+            HStack(alignment: .center) {
+                Text("资产详情")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Button(action: onClose) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 19))
+                        .foregroundColor(isCloseHovered ? .primary : Color(nsColor: .secondaryLabelColor))
+                        .frame(width: 28, height: 28)
+                        .background(
+                            Circle()
+                                .fill(isCloseHovered ? Color(nsColor: .quaternaryLabelColor) : Color.clear)
+                        )
                 }
+                .buttonStyle(.borderless)
+                .contentShape(Rectangle())
+                .frame(width: 28, height: 28)
+                .onHover { isCloseHovered = $0 }
+                .help("关闭详情面板 (Esc)")
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 10)
+            
+            Divider()
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header with Icon and Name
+                    HStack(alignment: .center, spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color(nsColor: .controlBackgroundColor))
+                                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
+                            
+                            Image(systemName: asset.iconName)
+                                .font(.system(size: 30))
+                                .foregroundColor(asset.status.color)
+                        }
+                        .frame(width: 52, height: 52)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(asset.name)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.primary)
+                            
+                            HStack(spacing: 6) {
+                                StatusBadge(asset.status)
+                                Text(asset.category)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        Spacer()
+                    }
                 
                 // Key metrics 2x2 grid
                 let gross = AssetCalculator.grossCost(for: asset)
@@ -396,6 +420,7 @@ public struct AssetInspectorView: View {
             }
             .padding(16)
         }
+    }
     }
     
     private func metricBox(title: String, value: String, color: Color) -> some View {

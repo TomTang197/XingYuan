@@ -73,8 +73,10 @@ public struct MainView: View {
                         AssetInspectorView(
                             asset: asset,
                             onClose: {
-                                showInspector = false
-                                selectedAsset = nil
+                                withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
+                                    showInspector = false
+                                    selectedAsset = nil
+                                }
                             },
                             onEdit: {
                                 assetToEdit = asset
@@ -85,16 +87,42 @@ public struct MainView: View {
                         )
                         .inspectorColumnWidth(min: 280, ideal: 340, max: 440)
                     } else {
-                        VStack(spacing: 8) {
-                            Image(systemName: "sidebar.right")
-                                .font(.system(size: 36))
-                                .foregroundColor(.secondary.opacity(0.5))
-                            Text("未选中资产")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                            Text("从列表选择任意卡片查看详细日均曲线")
-                                .font(.caption)
-                                .foregroundColor(.secondary.opacity(0.8))
+                        VStack(spacing: 0) {
+                            HStack {
+                                Spacer()
+                                Button {
+                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
+                                        showInspector = false
+                                    }
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 19))
+                                        .foregroundColor(Color(nsColor: .secondaryLabelColor))
+                                }
+                                .buttonStyle(.borderless)
+                                .contentShape(Rectangle())
+                                .frame(width: 28, height: 28)
+                                .help("关闭详情面板 (Esc)")
+                                .keyboardShortcut(.cancelAction)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
+                            
+                            Spacer()
+                            
+                            VStack(spacing: 8) {
+                                Image(systemName: "sidebar.right")
+                                    .font(.system(size: 36))
+                                    .foregroundColor(.secondary.opacity(0.5))
+                                Text("未选中资产")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                Text("从列表选择任意卡片查看详细日均曲线")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary.opacity(0.8))
+                            }
+                            
+                            Spacer()
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
@@ -117,7 +145,14 @@ public struct MainView: View {
         }
         .onChange(of: selectedAsset) { _, newAsset in
             if newAsset != nil {
-                showInspector = true
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
+                    showInspector = true
+                }
+            }
+        }
+        .onChange(of: showInspector) { _, isShowing in
+            if !isShowing && selectedAsset != nil {
+                selectedAsset = nil
             }
         }
         .onAppear {
@@ -246,7 +281,9 @@ public struct MainView: View {
             
             ToolbarItem(placement: .automatic) {
                 Button {
-                    showInspector.toggle()
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
+                        showInspector.toggle()
+                    }
                 } label: {
                     Label("检查器", systemImage: "sidebar.right")
                 }
