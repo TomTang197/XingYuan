@@ -15,7 +15,7 @@ public struct OverviewCardView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.primary)
                 
-                Text("\(stats.activeCount)/\(stats.totalCount)")
+                Text(stats.displayCountBadge)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 8)

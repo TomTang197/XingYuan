@@ -65,18 +65,26 @@ public struct AssetCardItemView: View {
                     }
                 }
                 
-                // Title and price | days
+                // Title and price | days (若已卖出则显示买入价与卖出价对照)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(asset.name)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     
-                    HStack(spacing: 6) {
-                        Text("¥\(String(format: "%.2f", asset.price))")
-                        Text("|")
-                            .foregroundColor(Color(nsColor: .separatorColor))
-                        Text("\(days)\(asset.rule.unitName)")
+                    HStack(spacing: 5) {
+                        if asset.status == .sold, let soldPrice = asset.soldPrice {
+                            Text("买 ¥\(Int(asset.price)) ➔ 卖 ¥\(Int(soldPrice))")
+                                .foregroundColor(Color.orange)
+                            Text("|")
+                                .foregroundColor(Color(nsColor: .separatorColor))
+                            Text("\(days)\(asset.rule.unitName)")
+                        } else {
+                            Text("¥\(String(format: "%.2f", asset.price))")
+                            Text("|")
+                                .foregroundColor(Color(nsColor: .separatorColor))
+                            Text("\(days)\(asset.rule.unitName)")
+                        }
                     }
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
@@ -90,14 +98,36 @@ public struct AssetCardItemView: View {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Text("¥\(String(format: "%.2f", daily))")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundColor(asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.46, green: 0.82, blue: 0.12)))
+                                .foregroundColor(daily < 0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : (asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.46, green: 0.82, blue: 0.12))))
                             
                             Text(asset.rule.unitString)
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
                         
-                        if let target = asset.targetDailyCost {
+                        if asset.status == .sold {
+                            // 卖出场景下的盈亏标签
+                            switch AssetCalculator.soldOutcome(for: asset) {
+                            case .profit(let amt):
+                                Text("理财净赚 ¥\(String(format: "%.1f", amt))")
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                            case .breakEven:
+                                Text("平价全额回血")
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundColor(.blue)
+                            case .loss(let netCost, _):
+                                Text("最终净损 ¥\(String(format: "%.1f", netCost))")
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundColor(.secondary)
+                            case .zeroResale:
+                                Text("0元残值出清")
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundColor(.secondary)
+                            case .unrecorded:
+                                Color.clear.frame(height: 14)
+                            }
+                        } else if let target = asset.targetDailyCost {
                             HStack(spacing: 3) {
                                 Text("目标")
                                     .font(.system(size: 9, weight: .medium))

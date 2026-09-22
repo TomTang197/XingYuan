@@ -139,12 +139,19 @@ public struct MainView: View {
         }
     }
     
+    private var currentFilterStatus: AssetStatus? {
+        if case .status(let s) = sidebarSelection {
+            return s
+        }
+        return nil
+    }
+    
     private var assetsListView: some View {
-        let stats = AssetCalculator.calculateOverview(assets: allAssets)
+        let stats = AssetCalculator.calculateOverview(assets: allAssets, filterStatus: currentFilterStatus)
         
         return ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                // 顶部资产总览卡片 (还原原图 1)
+                // 顶部资产总览卡片 (还原原图 1 与原图 27)
                 OverviewCardView(stats: stats)
                 
                 // 筛选与工具栏

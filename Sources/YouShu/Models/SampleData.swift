@@ -21,8 +21,8 @@ public enum SampleData {
             ("iPad pro m1", 8548.00, 1473, .active, nil, nil, 5.0, "数码", "ipad"),
             ("Fiat 2015", 34000.00, 1243, .active, nil, nil, 20.0, "出行", "car.fill"),
             ("MBP m4m", 24000.00, 38, .active, nil, nil, 30.0, "办公", "laptopcomputer"),
-            ("mbp m5", 2000.00, 252, .sold, 0.0, 10, nil, "办公", "laptopcomputer"),
-            ("MBP m2p", 1832.00, 931, .sold, 0.0, 50, nil, "办公", "laptopcomputer"),
+            ("mbp m5", 2000.00, 252, .sold, 2000.00, 10, nil, "办公", "laptopcomputer"),
+            ("MBP m2p", 1832.00, 931, .sold, 2000.00, 903, nil, "办公", "laptopcomputer"),
             ("AirPods pro 2", 1724.00, 1783, .active, nil, nil, 1.0, "影音", "airpodspro"),
             ("AirPods pro 3", 1560.00, 175, .active, nil, nil, 8.0, "影音", "airpodspro"),
             ("iPhone 13 Pro Max 256G", 11799.00, 1796, .active, nil, nil, 6.0, "数码", "iphone")

@@ -53,9 +53,20 @@ public struct AssetTableView: View {
             }
             .width(min: 75, ideal: 85)
             
-            TableColumn("购买价格") { asset in
-                Text("¥\(String(format: "%.2f", asset.price))")
-                    .font(.system(size: 12, design: .monospaced))
+            TableColumn("价格 / 回血") { asset in
+                if asset.status == .sold, let soldPrice = asset.soldPrice {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("买 ¥\(Int(asset.price))")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(.secondary)
+                        Text("卖 ¥\(Int(soldPrice))")
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundColor(.orange)
+                    }
+                } else {
+                    Text("¥\(String(format: "%.2f", asset.price))")
+                        .font(.system(size: 12, design: .monospaced))
+                }
             }
             .width(min: 90, ideal: 110)
             
@@ -72,7 +83,7 @@ public struct AssetTableView: View {
                 HStack(spacing: 2) {
                     Text("¥\(String(format: "%.2f", daily))")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundColor(asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.20, green: 0.70, blue: 0.10)))
+                        .foregroundColor(daily < 0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : (asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.46, green: 0.82, blue: 0.12))))
                     Text(asset.rule == .byCount ? "/次" : "/天")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
@@ -92,8 +103,30 @@ public struct AssetTableView: View {
             }
             .width(min: 60, ideal: 80)
             
-            TableColumn("目标价 / 回本") { asset in
-                if let target = asset.targetDailyCost {
+            TableColumn("目标价 / 盈亏") { asset in
+                if asset.status == .sold {
+                    switch AssetCalculator.soldOutcome(for: asset) {
+                    case .profit(let amt):
+                        Text("理财净赚 ¥\(String(format: "%.1f", amt))")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                    case .breakEven:
+                        Text("平价全额回血")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.blue)
+                    case .loss(let netCost, _):
+                        Text("最终净损 ¥\(String(format: "%.1f", netCost))")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary)
+                    case .zeroResale:
+                        Text("0元残值报废")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary)
+                    case .unrecorded:
+                        Text("-")
+                            .foregroundColor(.secondary)
+                    }
+                } else if let target = asset.targetDailyCost {
                     let daily = AssetCalculator.dailyCost(for: asset)
                     let remaining = AssetCalculator.targetDaysRemaining(for: asset)
                     VStack(alignment: .leading, spacing: 2) {

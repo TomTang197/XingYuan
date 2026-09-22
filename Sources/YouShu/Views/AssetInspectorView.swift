@@ -71,11 +71,24 @@ public struct AssetInspectorView: View {
                 }
                 
                 // Key metrics 2x2 grid
+                let gross = AssetCalculator.grossCost(for: asset)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    metricBox(title: "购买原价", value: "¥\(String(format: "%.2f", asset.price))", color: .primary)
-                    metricBox(title: "净支出", value: "¥\(String(format: "%.2f", net))", color: .primary)
-                    metricBox(title: "服役时间", value: "\(days) 天", color: .secondary)
-                    metricBox(title: "当前日均", value: "¥\(String(format: "%.2f", daily))/天", color: Color(red: 0.20, green: 0.70, blue: 0.10))
+                    if asset.status == .sold {
+                        metricBox(title: "累计投入", value: "¥\(String(format: "%.2f", gross))", color: .primary)
+                        metricBox(title: "二手回血", value: "¥\(String(format: "%.2f", asset.soldPrice ?? 0.0))", color: .orange)
+                        metricBox(title: "净沉没损益", value: "¥\(String(format: "%.2f", net))", color: net < 0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : (net == 0 ? .blue : .primary))
+                        metricBox(title: "最终结清日均", value: "¥\(String(format: "%.2f", daily))\(asset.rule.unitString)", color: daily < 0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : (daily == 0 ? .blue : Color(red: 0.90, green: 0.60, blue: 0.15)))
+                    } else {
+                        metricBox(title: "购买原价", value: "¥\(String(format: "%.2f", asset.price))", color: .primary)
+                        metricBox(title: "净支出", value: "¥\(String(format: "%.2f", net))", color: .primary)
+                        metricBox(title: "服役时间", value: "\(days) 天", color: .secondary)
+                        metricBox(title: "当前日均", value: "¥\(String(format: "%.2f", daily))/天", color: Color(red: 0.20, green: 0.70, blue: 0.10))
+                    }
+                }
+                
+                // 若已卖出，展示专属二手结算审计卡
+                if asset.status == .sold {
+                    soldAuditCard(asset: asset, net: net, daily: daily, days: days)
                 }
                 
                 // 目标日均与回本进展
@@ -384,6 +397,116 @@ public struct AssetInspectorView: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 8)
+                .fill(Color(nsColor: .controlBackgroundColor))
+        )
+    }
+    
+    @ViewBuilder
+    private func soldAuditCard(asset: AssetItem, net: Double, daily: Double, days: Int) -> some View {
+        let gross = AssetCalculator.grossCost(for: asset)
+        let soldPrice = asset.soldPrice ?? 0.0
+        let outcome = AssetCalculator.soldOutcome(for: asset)
+        let recoveryRate = AssetCalculator.recoveryRate(for: asset) ?? 0.0
+        let df = DateFormatter()
+        let _ = { df.dateFormat = "yyyy-MM-dd" }()
+        let soldDateStr = asset.soldDate.map { df.string(from: $0) } ?? "未记录"
+        
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "banknote.fill")
+                    .foregroundColor(.orange)
+                Text("二手出清损益结算")
+                    .font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Text("卖出日期: \(soldDateStr)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            // 场景深度解读
+            HStack(alignment: .top, spacing: 10) {
+                switch outcome {
+                case .profit(let amt):
+                    Image(systemName: "arrow.up.right.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("理财溢价净赚 ¥\(String(format: "%.2f", amt))")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                        Text("二手售出回血全额冲抵购入投入，在持有 \(days) 天内为您带来每日净收益 ¥\(String(format: "%.2f", abs(daily)))/天，升值率 \(Int((recoveryRate - 1.0) * 100))%！")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                case .breakEven:
+                    Image(systemName: "equal.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.blue)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("平价全额回血（0元白嫖）")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.blue)
+                        Text("二手售出金额恰好平抑购入与附加支出，持有 \(days) 天实现完全零成本使用！")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                case .loss(let netCost, _):
+                    Image(systemName: "chart.line.downtrend.xyaxis.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.orange)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("正常折旧出清（净折损 ¥\(String(format: "%.2f", netCost))）")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.primary)
+                        Text("二手收回 ¥\(String(format: "%.2f", soldPrice))（回血率 \(Int(recoveryRate * 100))%），服役 \(days) 天摊薄后净日均使用成本仅 ¥\(String(format: "%.2f", daily))/天。")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                case .zeroResale(let gross):
+                    Image(systemName: "trash.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("0元报废/赠送出清")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.secondary)
+                        Text("全额作为沉没成本核算，总计投入 ¥\(String(format: "%.2f", gross))。")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                case .unrecorded:
+                    Text("尚未录入二手售出金额")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(nsColor: .windowBackgroundColor).opacity(0.6))
+            )
+            
+            // 投入 vs 回血 对比进度条
+            if gross > 0 {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("回血覆盖率")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(Int(recoveryRate * 100))%")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundColor(recoveryRate >= 1.0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : .orange)
+                    }
+                    ProgressView(value: min(1.0, recoveryRate), total: 1.0)
+                        .tint(recoveryRate >= 1.0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : .orange)
+                }
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
                 .fill(Color(nsColor: .controlBackgroundColor))
         )
     }

@@ -13,6 +13,15 @@ public struct OverviewStats {
     public var activeCount: Int
     public var retiredCount: Int
     public var soldCount: Int
+    public var totalOverallCount: Int? = nil
+    public var visibleCount: Int? = nil
+    
+    public var displayCountBadge: String {
+        let vis = visibleCount ?? totalCount
+        let tot = totalOverallCount ?? totalCount
+        return "\(vis)/\(tot)"
+    }
+    
     public var totalCount: Int { activeCount + retiredCount + soldCount }
     
     public var activeRatio: Double {
@@ -63,12 +72,26 @@ public enum AssetCalculator {
         return max(1, days)
     }
     
-    /// 计算净成本 (购入价 + 附加项 - 收益 - 二手回血)
-    public static func netCost(for item: AssetItem) -> Double {
+    /// 计算总投入成本 (购买原价 + 附加支出 - 附加收益)
+    public static func grossCost(for item: AssetItem) -> Double {
         let expenseTotal = item.expenses.reduce(0.0) { $0 + $1.amount }
         let incomeTotal = item.incomes.reduce(0.0) { $0 + $1.amount }
+        return item.price + expenseTotal - incomeTotal
+    }
+    
+    /// 计算净成本 (总投入 - 二手回血)
+    public static func netCost(for item: AssetItem) -> Double {
+        let gross = grossCost(for: item)
         let soldDeduction = (item.status == .sold) ? (item.soldPrice ?? 0.0) : 0.0
-        return item.price + expenseTotal - incomeTotal - soldDeduction
+        return gross - soldDeduction
+    }
+    
+    /// 计算二手回血比例 (0.0 ~ 1.0+)
+    public static func recoveryRate(for item: AssetItem) -> Double? {
+        guard item.status == .sold, let soldPrice = item.soldPrice else { return nil }
+        let gross = grossCost(for: item)
+        guard gross > 0 else { return 1.0 }
+        return soldPrice / gross
     }
     
     /// 计算当前日均（或次均）成本
@@ -148,39 +171,139 @@ public enum AssetCalculator {
         return points
     }
     
-    /// 计算全局资产看板指标
-    public static func calculateOverview(assets: [AssetItem], asOf: Date = Date()) -> OverviewStats {
-        var totalValue: Double = 0
-        var totalDaily: Double = 0
-        var activeCount = 0
-        var retiredCount = 0
-        var soldCount = 0
+    /// 已卖出物品的多场景损益状态
+    public enum SoldOutcome: Equatable {
+        case profit(profitAmount: Double)                  // 场景 1: 溢价卖出/理财升值 (售出价 > 投入)
+        case breakEven                                     // 场景 2: 平价全额回血 (售出价 == 投入，零成本白嫖)
+        case loss(netCost: Double, lossAmount: Double)     // 场景 3: 正常折旧折价卖出 (0 < 售出价 < 投入)
+        case zeroResale(grossCost: Double)                 // 场景 4: 零元报废/赠送出清 (售出价 == 0)
+        case unrecorded                                    // 场景 5: 未录入售出金额
         
-        for item in assets {
-            switch item.status {
-            case .active:
-                activeCount += 1
-                if !item.excludeFromTotalAssets {
-                    totalValue += item.price
-                }
-                if !item.excludeFromDailyCost {
-                    totalDaily += dailyCost(for: item, asOf: asOf)
-                }
-            case .retired:
-                retiredCount += 1
-            case .sold:
-                soldCount += 1
-
-            }
+        public var isProfit: Bool {
+            if case .profit = self { return true }
+            return false
         }
         
-        return OverviewStats(
-            totalAssetValue: totalValue,
-            totalDailyCost: totalDaily,
-            activeCount: activeCount,
-            retiredCount: retiredCount,
-            soldCount: soldCount
-        )
+        public var isBreakEven: Bool {
+            if case .breakEven = self { return true }
+            return false
+        }
+        
+        public var tagText: String {
+            switch self {
+            case .profit(let amt):
+                return "理财净赚 ¥\(String(format: "%.1f", amt))"
+            case .breakEven:
+                return "平价全额回血"
+            case .loss(let netCost, _):
+                return "最终净损 ¥\(String(format: "%.1f", netCost))"
+            case .zeroResale:
+                return "0元残值报废"
+            case .unrecorded:
+                return "未记录出清价"
+            }
+        }
+    }
+    
+    /// 分析已卖出资产的盈亏结果
+    public static func soldOutcome(for item: AssetItem) -> SoldOutcome {
+        guard item.status == .sold else { return .unrecorded }
+        guard let soldPrice = item.soldPrice else { return .unrecorded }
+        let gross = grossCost(for: item)
+        if soldPrice == 0 {
+            return .zeroResale(grossCost: gross)
+        }
+        let net = gross - soldPrice
+        if abs(net) < 0.001 {
+            return .breakEven
+        } else if net > 0 {
+            return .loss(netCost: net, lossAmount: net)
+        } else {
+            return .profit(profitAmount: abs(net))
+        }
+    }
+    
+    /// 计算资产看板指标 (支持跟随当前 Tab 视角动态统计，完美匹配截图 1 全部与截图 27 已卖出)
+    public static func calculateOverview(
+        assets: [AssetItem],
+        filterStatus: AssetStatus? = nil,
+        asOf: Date = Date()
+    ) -> OverviewStats {
+        let allCount = assets.count
+        
+        if let status = filterStatus {
+            // 处于特定状态过滤视图 (例如「已卖出」Tab 对应截图 27)
+            let filtered = assets.filter { $0.status == status }
+            var totalVal: Double = 0
+            var totalDaily: Double = 0
+            
+            for item in filtered {
+                switch status {
+                case .active:
+                    if !item.excludeFromTotalAssets { totalVal += item.price }
+                    if !item.excludeFromDailyCost { totalDaily += dailyCost(for: item, asOf: asOf) }
+                case .retired:
+                    if !item.excludeFromTotalAssets { totalVal += item.price }
+                    if !item.excludeFromDailyCost { totalDaily += dailyCost(for: item, asOf: asOf) }
+                case .sold:
+                    // 已卖出专属看板：总资产显示为卖出累计净损益 (如 -168.00)，日均成本为已卖出合并日均 (如 -5.96)
+                    if !item.excludeFromTotalAssets {
+                        totalVal += netCost(for: item)
+                    }
+                    if !item.excludeFromDailyCost {
+                        totalDaily += dailyCost(for: item, asOf: asOf)
+                    }
+                }
+            }
+            
+            return OverviewStats(
+                totalAssetValue: totalVal,
+                totalDailyCost: totalDaily,
+                activeCount: status == .active ? filtered.count : 0,
+                retiredCount: status == .retired ? filtered.count : 0,
+                soldCount: status == .sold ? filtered.count : 0,
+                totalOverallCount: allCount,
+                visibleCount: filtered.count
+            )
+        } else {
+            // 「全部」Tab：在役原价 + 已卖出净损益冲抵 (对应截图 1 与 21: 82149.98 + (-168.00) = 81981.98)
+            var totalVal: Double = 0
+            var totalDaily: Double = 0
+            var activeCount = 0
+            var retiredCount = 0
+            var soldCount = 0
+            
+            for item in assets {
+                switch item.status {
+                case .active:
+                    activeCount += 1
+                    if !item.excludeFromTotalAssets {
+                        totalVal += item.price
+                    }
+                    if !item.excludeFromDailyCost {
+                        totalDaily += dailyCost(for: item, asOf: asOf)
+                    }
+                case .retired:
+                    retiredCount += 1
+                case .sold:
+                    soldCount += 1
+                    if !item.excludeFromTotalAssets {
+                        // 已卖出的净损益计入累积沉没资产池
+                        totalVal += netCost(for: item)
+                    }
+                }
+            }
+            
+            return OverviewStats(
+                totalAssetValue: totalVal,
+                totalDailyCost: totalDaily,
+                activeCount: activeCount,
+                retiredCount: retiredCount,
+                soldCount: soldCount,
+                totalOverallCount: allCount,
+                visibleCount: allCount
+            )
+        }
     }
     
     /// 按状态分布统计
@@ -193,8 +316,8 @@ public enum AssetCalculator {
             let count = filtered.count
             let amount: Double
             if status == .sold {
-                // 卖出损益净额
-                amount = filtered.reduce(0.0) { $0 + ($1.price - ($1.soldPrice ?? 0.0)) }
+                // 卖出损益净额 (支持附加收支)
+                amount = filtered.reduce(0.0) { $0 + netCost(for: $1) }
             } else {
                 amount = filtered.reduce(0.0) { $0 + $1.price }
             }
