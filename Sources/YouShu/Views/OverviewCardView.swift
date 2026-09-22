@@ -47,7 +47,7 @@ public struct OverviewCardView: View {
                     
                     Text("¥\(String(format: "%.2f", stats.totalDailyCost))")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                        .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
                 }
                 
                 Spacer()
@@ -63,12 +63,16 @@ public struct OverviewCardView: View {
                     statusCountLabel(title: "已卖出", count: stats.soldCount, color: AssetStatus.sold.color)
                 }
                 
-                // 状态彩色占比条
+                // 状态彩色占比条 (精确扣减 spacing 防止溢出)
                 GeometryReader { geo in
+                    let visibleSegments = (stats.activeCount > 0 ? 1 : 0) + (stats.retiredCount > 0 ? 1 : 0) + (stats.soldCount > 0 ? 1 : 0)
+                    let totalSpacing = CGFloat(max(0, visibleSegments - 1)) * 3.0
+                    let availableWidth = max(0, geo.size.width - totalSpacing)
                     let total = max(1, stats.totalCount)
-                    let activeWidth = geo.size.width * CGFloat(stats.activeCount) / CGFloat(total)
-                    let retiredWidth = geo.size.width * CGFloat(stats.retiredCount) / CGFloat(total)
-                    let soldWidth = geo.size.width * CGFloat(stats.soldCount) / CGFloat(total)
+                    
+                    let activeWidth = availableWidth * CGFloat(stats.activeCount) / CGFloat(total)
+                    let retiredWidth = availableWidth * CGFloat(stats.retiredCount) / CGFloat(total)
+                    let soldWidth = availableWidth * CGFloat(stats.soldCount) / CGFloat(total)
                     
                     HStack(spacing: 3) {
                         if stats.activeCount > 0 {

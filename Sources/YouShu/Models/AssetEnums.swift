@@ -18,7 +18,7 @@ public enum AssetStatus: String, CaseIterable, Codable, Identifiable {
     public var color: Color {
         switch self {
         case .active:
-            // 明亮清新的青草绿，还原截图标志性颜色
+            // 统一的品牌青草绿
             return Color(red: 0.46, green: 0.82, blue: 0.12)
         case .retired:
             return Color(red: 0.60, green: 0.63, blue: 0.67)
@@ -48,6 +48,22 @@ public enum CostRule: String, CaseIterable, Codable, Identifiable {
         case .byDay: return "按天"
         case .byCount: return "按次"
         case .custom: return "自定义"
+        }
+    }
+    
+    public var unitString: String {
+        switch self {
+        case .byDay: return "/天"
+        case .byCount: return "/次"
+        case .custom: return "/天"
+        }
+    }
+    
+    public var unitName: String {
+        switch self {
+        case .byDay: return "天"
+        case .byCount: return "次"
+        case .custom: return "天"
         }
     }
 }

@@ -133,23 +133,32 @@ public struct WishlistView: View {
                 Spacer()
             }
             
-            // 冷静期公式说明
+            // 冷静期公式与心理核算
             if let target = wish.targetDailyCost, let days = targetDays {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("期望日均 ¥\(String(format: "%.2f", target))/天")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
-                        Spacer()
-                        Text("需服役 \(days) 天回本")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.orange)
+                HStack(spacing: 8) {
+                    Image(systemName: "hourglass.badge.plus")
+                        .foregroundColor(.orange)
+                        .font(.system(size: 16))
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack {
+                            Text("买前冷静期: 需使用 \(days) 天")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.orange)
+                            Spacer()
+                            let years = Double(days) / 365.0
+                            Text(String(format: "约 %.1f 年", years))
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text("按期望日均 ¥\(String(format: "%.2f", target))/天 测算回本年限")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
                     }
-                    ProgressView(value: 0, total: Double(days))
-                        .tint(Color(red: 0.46, green: 0.82, blue: 0.12))
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .controlBackgroundColor)))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.08)))
             }
             
             if !wish.notes.isEmpty {

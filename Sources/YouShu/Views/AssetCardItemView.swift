@@ -40,8 +40,11 @@ public struct AssetCardItemView: View {
                 HStack(alignment: .top) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color(nsColor: .controlBackgroundColor))
-                            .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                            .fill(Color(nsColor: .quaternaryLabelColor).opacity(0.35))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .stroke(Color(nsColor: .separatorColor).opacity(0.3), lineWidth: 1)
+                            )
                         
                         Image(systemName: asset.iconName)
                             .font(.system(size: 24))
@@ -73,7 +76,7 @@ public struct AssetCardItemView: View {
                         Text("¥\(String(format: "%.2f", asset.price))")
                         Text("|")
                             .foregroundColor(Color(nsColor: .separatorColor))
-                        Text("\(days)天")
+                        Text("\(days)\(asset.rule.unitName)")
                     }
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
@@ -81,41 +84,63 @@ public struct AssetCardItemView: View {
                 
                 Spacer(minLength: 4)
                 
-                // Bottom row: Daily Cost & Target Countdown
-                HStack(alignment: .firstTextBaseline) {
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text("¥\(String(format: "%.2f", daily))")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundColor(asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.20, green: 0.70, blue: 0.10)))
+                // Bottom row: Daily Cost & Target Price & Countdown (with fixed height to prevent baseline jitter)
+                HStack(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text("¥\(String(format: "%.2f", daily))")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundColor(asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.46, green: 0.82, blue: 0.12)))
+                            
+                            Text(asset.rule.unitString)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
                         
-                        Text(asset.rule == .byCount ? "/次" : "/天")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.secondary)
+                        if let target = asset.targetDailyCost {
+                            HStack(spacing: 3) {
+                                Text("目标")
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                Text("¥\(String(format: "%.2f", target))\(asset.rule.unitString)")
+                                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                    .foregroundColor(daily <= target ? Color(red: 0.46, green: 0.82, blue: 0.12) : .orange)
+                            }
+                        } else {
+                            // 预留微型占位符保持多张卡片并排时大号数字基线绝对对齐
+                            Color.clear.frame(height: 14)
+                        }
                     }
+                    .frame(minHeight: 38, alignment: .bottomLeading)
                     
-                    Spacer()
+                    Spacer(minLength: 4)
                     
                     if let remaining = remainingDays {
                         if remaining > 0 {
-                            Text("还剩 \(remaining)天")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.orange)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.orange.opacity(0.12))
-                                )
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("还剩 \(remaining)\(asset.rule.unitName)")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.orange)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.orange.opacity(0.12))
+                                    )
+                                    .minimumScaleFactor(0.8)
+                                    .lineLimit(1)
+                            }
                         } else {
                             Text("已回本")
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                                .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
                                 .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
+                                .padding(.vertical, 3)
                                 .background(
                                     Capsule()
-                                        .fill(Color(red: 0.20, green: 0.70, blue: 0.10).opacity(0.12))
+                                        .fill(Color(red: 0.46, green: 0.82, blue: 0.12).opacity(0.12))
                                 )
+                                .lineLimit(1)
                         }
                     }
                 }

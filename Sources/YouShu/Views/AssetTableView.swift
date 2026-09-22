@@ -92,24 +92,38 @@ public struct AssetTableView: View {
             }
             .width(min: 60, ideal: 80)
             
-            TableColumn("目标回本") { asset in
-                let remaining = AssetCalculator.targetDaysRemaining(for: asset)
-                if let rem = remaining {
-                    if rem > 0 {
-                        Text("还剩 \(rem) 天")
-                            .font(.system(size: 11))
-                            .foregroundColor(.orange)
-                    } else {
-                        Text("已回本")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+            TableColumn("目标价 / 回本") { asset in
+                if let target = asset.targetDailyCost {
+                    let daily = AssetCalculator.dailyCost(for: asset)
+                    let remaining = AssetCalculator.targetDaysRemaining(for: asset)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 3) {
+                            Text("目标")
+                                .font(.system(size: 9))
+                                .foregroundColor(.secondary)
+                            Text("¥\(String(format: "%.2f", target))\(asset.rule.unitString)")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .foregroundColor(daily <= target ? Color(red: 0.46, green: 0.82, blue: 0.12) : .orange)
+                        }
+                        
+                        if let rem = remaining {
+                            if rem > 0 {
+                                Text("还剩 \(rem) \(asset.rule.unitName)")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.orange)
+                            } else {
+                                Text("已回本")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                            }
+                        }
                     }
                 } else {
                     Text("-")
                         .foregroundColor(.secondary)
                 }
             }
-            .width(min: 80, ideal: 95)
+            .width(min: 110, ideal: 130)
         }
         .onChange(of: selectedID) { _, newID in
             if let id = newID {

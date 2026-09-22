@@ -269,10 +269,13 @@ public struct TrendsView: View {
         var points: [DailyTrendPoint] = []
         for d in stride(from: 1, through: totalDays, by: step) {
             let pointDate = cal.date(byAdding: .day, value: d, to: earliest) ?? today
-            let activeAtDate = assets.filter { $0.purchaseDate <= pointDate && ($0.status == .active || ($0.soldDate ?? today) >= pointDate) }
+            let activeAtDate = assets.filter {
+                $0.purchaseDate <= pointDate &&
+                !$0.excludeFromDailyCost &&
+                ($0.status == .active || ($0.soldDate ?? today) >= pointDate)
+            }
             let sumDaily = activeAtDate.reduce(0.0) { sum, item in
-                let days = max(1, cal.dateComponents([.day], from: item.purchaseDate, to: pointDate).day ?? 1)
-                return sum + (item.price / Double(days))
+                sum + AssetCalculator.dailyCost(for: item, asOf: pointDate)
             }
             points.append(DailyTrendPoint(date: pointDate, dateStr: df.string(from: pointDate), dailyCost: sumDaily))
         }

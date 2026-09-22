@@ -19,6 +19,9 @@ public struct AddEditAssetSheet: View {
     @State private var useCountString: String = "1"
     
     @State private var targetDailyString: String = ""
+    @State private var targetMode: TargetCostMode = .none
+    @State private var targetDate: Date = Calendar.current.date(byAdding: .year, value: 1, to: Date()) ?? Date()
+    @State private var computedDaysRequired: Int? = nil
     @State private var marketPriceString: String = ""
     
     @State private var isPinned: Bool = false
@@ -85,9 +88,45 @@ public struct AddEditAssetSheet: View {
                         TextField("已使用次数", text: $useCountString)
                     }
                     
-                    TextField("目标期望日均 (如：15.00，留空则不设定)", text: $targetDailyString)
+                    Picker("目标设定模式", selection: $targetMode) {
+                        ForEach(TargetCostMode.allCases) { m in
+                            Text(m.title).tag(m)
+                        }
+                    }
+                    .pickerStyle(.segmented)
                     
-                    TextField("当前预估市场二手价 (留空则不设定)", text: $marketPriceString)
+                    if targetMode == .byPrice || targetMode == .custom {
+                        TextField("目标期望日均 (如：15.00)", text: $targetDailyString)
+                            .onChange(of: targetDailyString) { _, val in
+                                if let target = Double(val), target > 0, let p = Double(priceString), p > 0 {
+                                    computedDaysRequired = Int(ceil(p / target))
+                                } else {
+                                    computedDaysRequired = nil
+                                }
+                            }
+                        
+                        if let daysReq = computedDaysRequired {
+                            Text("预计需服役 \(daysReq) \(rule.unitName) 达成目标")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
+                    } else if targetMode == .byDate {
+                        DatePicker("目标达成日期", selection: $targetDate, in: purchaseDate..., displayedComponents: .date)
+                            .onChange(of: targetDate) { _, newDate in
+                                let days = max(1, Calendar.current.dateComponents([.day], from: purchaseDate, to: newDate).day ?? 1)
+                                if let p = Double(priceString), p > 0 {
+                                    let daily = p / Double(days)
+                                    targetDailyString = String(format: "%.2f", daily)
+                                }
+                            }
+                        if !targetDailyString.isEmpty {
+                            Text("到期时日均成本将降至: ¥\(targetDailyString)/天")
+                                .font(.caption)
+                                .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                        }
+                    }
+                    
+                    TextField("当前预估二手市场价 (选填)", text: $marketPriceString)
                 }
                 
                 Section("状态与归属") {
@@ -137,6 +176,16 @@ public struct AddEditAssetSheet: View {
                     rule = asset.rule
                     useCountString = "\(asset.useCount)"
                     targetDailyString = asset.targetDailyCost.map { String(format: "%.2f", $0) } ?? ""
+                    if asset.targetDailyCost != nil {
+                        targetMode = .byPrice
+                        if let t = asset.targetDailyCost, t > 0 {
+                            computedDaysRequired = Int(ceil(asset.price / t))
+                        }
+                    }
+                    if let td = asset.targetDate {
+                        targetDate = td
+                        targetMode = .byDate
+                    }
                     marketPriceString = asset.marketPrice.map { String(format: "%.2f", $0) } ?? ""
                     isPinned = asset.isPinned
                     excludeFromTotalAssets = asset.excludeFromTotalAssets

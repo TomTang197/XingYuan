@@ -80,14 +80,35 @@ public struct AssetInspectorView: View {
                 
                 // 目标日均与回本进展
                 if let target = asset.targetDailyCost {
-                    VStack(alignment: .leading, spacing: 8) {
+                    let progress = AssetCalculator.targetProgress(for: asset)
+                    let totalUnits = AssetCalculator.targetTotalUnits(for: asset) ?? 1
+                    let currentUnits = (asset.rule == .byCount) ? asset.useCount : days
+                    
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text("目标日均")
-                                .font(.caption)
+                            Text("目标日均成本")
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Text("¥\(String(format: "%.2f", target))/天")
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            Text("¥\(String(format: "%.2f", target))\(asset.rule.unitString)")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(daily <= target ? Color(red: 0.46, green: 0.82, blue: 0.12) : .orange)
+                        }
+                        
+                        // 目标达成进度条 (正向认知模型：从 0% 增长到 100%)
+                        VStack(alignment: .leading, spacing: 4) {
+                            ProgressView(value: progress, total: 1.0)
+                                .tint(daily <= target ? Color(red: 0.46, green: 0.82, blue: 0.12) : .orange)
+                            
+                            HStack {
+                                Text("已回本 \(Int(progress * 100))%")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(daily <= target ? Color(red: 0.46, green: 0.82, blue: 0.12) : .secondary)
+                                Spacer()
+                                Text("\(currentUnits) / \(totalUnits) \(asset.rule.unitName)")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                         
                         if let rem = remaining {
@@ -97,24 +118,52 @@ public struct AssetInspectorView: View {
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                     Spacer()
-                                    Text("还需服役 \(rem) 天")
+                                    Text("还需服役 \(rem) \(asset.rule.unitName)")
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.orange)
                                 }
                             } else {
                                 HStack {
                                     Image(systemName: "checkmark.seal.fill")
-                                        .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                                        .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
                                     Text("恭喜！已达成目标日均，物超所值")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
                                 }
                             }
                         }
                     }
                     .padding(12)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(nsColor: .controlBackgroundColor))
+                    )
+                }
+                
+                // 市场参考价 (若有)
+                if let marketPrice = asset.marketPrice {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("预估二手市场价")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("¥\(String(format: "%.2f", marketPrice))")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("账面已折旧")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            let dep = max(0, asset.price - marketPrice)
+                            Text("¥\(String(format: "%.2f", dep))")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
                             .fill(Color(nsColor: .controlBackgroundColor))
                     )
                 }

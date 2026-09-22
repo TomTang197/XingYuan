@@ -82,14 +82,40 @@ public enum AssetCalculator {
         }
     }
     
-    /// 目标日均回本倒计时天数
+    /// 目标回本倒计时单位数 (按天规则返回剩余天数，按次规则返回剩余次数)
     public static func targetDaysRemaining(for item: AssetItem, asOf: Date = Date()) -> Int? {
         guard let target = item.targetDailyCost, target > 0 else { return nil }
         let cost = netCost(for: item)
         if cost <= 0 { return 0 } // 已通过收益/卖出完全回本
-        let requiredDays = Int(ceil(cost / target))
-        let currentDays = daysInService(for: item, asOf: asOf)
-        return max(0, requiredDays - currentDays)
+        
+        let requiredUnits = Int(ceil(cost / target))
+        let currentUnits: Int
+        if item.rule == .byCount {
+            currentUnits = item.useCount
+        } else {
+            currentUnits = daysInService(for: item, asOf: asOf)
+        }
+        return max(0, requiredUnits - currentUnits)
+    }
+    
+    /// 目标回本所需总单位数 (天数或次数)
+    public static func targetTotalUnits(for item: AssetItem) -> Int? {
+        guard let target = item.targetDailyCost, target > 0 else { return nil }
+        let cost = netCost(for: item)
+        if cost <= 0 { return 1 }
+        return max(1, Int(ceil(cost / target)))
+    }
+    
+    /// 当前已达成回本的比例 (0.0 ~ 1.0)
+    public static func targetProgress(for item: AssetItem, asOf: Date = Date()) -> Double {
+        guard let total = targetTotalUnits(for: item) else { return 0.0 }
+        let current: Int
+        if item.rule == .byCount {
+            current = item.useCount
+        } else {
+            current = daysInService(for: item, asOf: asOf)
+        }
+        return min(1.0, max(0.0, Double(current) / Double(total)))
     }
     
     /// 是否已达成目标日均
