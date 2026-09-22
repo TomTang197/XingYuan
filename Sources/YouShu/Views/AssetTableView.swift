@@ -1,0 +1,120 @@
+import SwiftUI
+
+public struct AssetTableView: View {
+    public let assets: [AssetItem]
+    @Binding public var selectedAsset: AssetItem?
+    public var onEdit: (AssetItem) -> Void
+    public var onMarkAsSold: (AssetItem) -> Void
+    public var onMarkAsRetired: (AssetItem) -> Void
+    public var onDelete: (AssetItem) -> Void
+    
+    @State private var selectedID: UUID?
+    @State private var sortOrder = [KeyPathComparator(\AssetItem.purchaseDate, order: .reverse)]
+    
+    public init(
+        assets: [AssetItem],
+        selectedAsset: Binding<AssetItem?>,
+        onEdit: @escaping (AssetItem) -> Void,
+        onMarkAsSold: @escaping (AssetItem) -> Void,
+        onMarkAsRetired: @escaping (AssetItem) -> Void,
+        onDelete: @escaping (AssetItem) -> Void
+    ) {
+        self.assets = assets
+        self._selectedAsset = selectedAsset
+        self.onEdit = onEdit
+        self.onMarkAsSold = onMarkAsSold
+        self.onMarkAsRetired = onMarkAsRetired
+        self.onDelete = onDelete
+    }
+    
+    public var body: some View {
+        Table(assets, selection: $selectedID) {
+            TableColumn("名称") { asset in
+                HStack(spacing: 8) {
+                    Image(systemName: asset.iconName)
+                        .font(.system(size: 14))
+                        .foregroundColor(asset.status.color)
+                        .frame(width: 20)
+                    
+                    Text(asset.name)
+                        .font(.system(size: 13, weight: .medium))
+                    
+                    if asset.isPinned {
+                        Image(systemName: "pin.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+            .width(min: 140, ideal: 180)
+            
+            TableColumn("状态") { asset in
+                StatusBadge(asset.status)
+            }
+            .width(min: 75, ideal: 85)
+            
+            TableColumn("购买价格") { asset in
+                Text("¥\(String(format: "%.2f", asset.price))")
+                    .font(.system(size: 12, design: .monospaced))
+            }
+            .width(min: 90, ideal: 110)
+            
+            TableColumn("服役天数") { asset in
+                let days = AssetCalculator.daysInService(for: asset)
+                Text("\(days) 天")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+            }
+            .width(min: 70, ideal: 85)
+            
+            TableColumn("日均成本") { asset in
+                let daily = AssetCalculator.dailyCost(for: asset)
+                HStack(spacing: 2) {
+                    Text("¥\(String(format: "%.2f", daily))")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(asset.status == .sold ? Color(red: 0.90, green: 0.60, blue: 0.15) : (asset.status == .retired ? .secondary : Color(red: 0.20, green: 0.70, blue: 0.10)))
+                    Text(asset.rule == .byCount ? "/次" : "/天")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .width(min: 100, ideal: 120)
+            
+            TableColumn("类别") { asset in
+                Text(asset.category)
+                    .font(.system(size: 11))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color(nsColor: .quaternaryLabelColor).opacity(0.5))
+                    )
+            }
+            .width(min: 60, ideal: 80)
+            
+            TableColumn("目标回本") { asset in
+                let remaining = AssetCalculator.targetDaysRemaining(for: asset)
+                if let rem = remaining {
+                    if rem > 0 {
+                        Text("还剩 \(rem) 天")
+                            .font(.system(size: 11))
+                            .foregroundColor(.orange)
+                    } else {
+                        Text("已回本")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                    }
+                } else {
+                    Text("-")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .width(min: 80, ideal: 95)
+        }
+        .onChange(of: selectedID) { _, newID in
+            if let id = newID {
+                selectedAsset = assets.first(where: { $0.id == id })
+            }
+        }
+    }
+}
