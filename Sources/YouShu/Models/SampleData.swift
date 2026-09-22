@@ -4,8 +4,22 @@ import SwiftData
 public enum SampleData {
     public static func loadSampleDataIfNeeded(context: ModelContext) {
         let descriptor = FetchDescriptor<AssetItem>()
-        if let count = try? context.fetchCount(descriptor), count > 0 {
-            return // 已有数据，无需载入
+        if let existing = try? context.fetch(descriptor), !existing.isEmpty {
+            var changed = false
+            for item in existing {
+                if item.name == "MBP m2p" && (item.soldPrice == nil || item.soldPrice == 0.0) {
+                    item.soldPrice = 2000.00
+                    changed = true
+                }
+                if item.name == "mbp m5" && (item.soldPrice == nil || item.soldPrice == 0.0) {
+                    item.soldPrice = 2000.00
+                    changed = true
+                }
+            }
+            if changed {
+                try? context.save()
+            }
+            return
         }
         
         loadSampleData(context: context)

@@ -15,6 +15,8 @@ public struct AddEditAssetSheet: View {
     @State private var iconName: String = "shippingbox.fill"
     
     @State private var status: AssetStatus = .active
+    @State private var soldPriceString: String = ""
+    @State private var soldDate: Date = Date()
     @State private var rule: CostRule = .byDay
     @State private var useCountString: String = "1"
     
@@ -137,6 +139,37 @@ public struct AddEditAssetSheet: View {
                     }
                     .pickerStyle(.segmented)
                     
+                    if status == .sold {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("二手出清信息")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.orange)
+                            
+                            TextField("二手卖出价 (¥)", text: $soldPriceString)
+                                .textFieldStyle(.roundedBorder)
+                            
+                            DatePicker("卖出成交日期", selection: $soldDate, displayedComponents: .date)
+                            
+                            if let sp = Double(soldPriceString), let bp = Double(priceString) {
+                                let diff = sp - bp
+                                if diff > 0 {
+                                    Text("🎉 溢价理财卖出：净赚 ¥\(String(format: "%.2f", diff))")
+                                        .font(.caption)
+                                        .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
+                                } else if abs(diff) < 0.01 {
+                                    Text("✨ 平价全额回血：0元白嫖")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                } else {
+                                    Text("📉 正常折旧出清：净折损 ¥\(String(format: "%.2f", abs(diff)))")
+                                        .font(.caption)
+                                        .foregroundColor(.orange)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    
                     Toggle("置顶该资产", isOn: $isPinned)
                     Toggle("不计入总资产总览", isOn: $excludeFromTotalAssets)
                     Toggle("不计入全局总日均成本", isOn: $excludeFromDailyCost)
@@ -190,6 +223,12 @@ public struct AddEditAssetSheet: View {
                     isPinned = asset.isPinned
                     excludeFromTotalAssets = asset.excludeFromTotalAssets
                     excludeFromDailyCost = asset.excludeFromDailyCost
+                    if let sp = asset.soldPrice {
+                        soldPriceString = String(format: "%.2f", sp)
+                    }
+                    if let sd = asset.soldDate {
+                        soldDate = sd
+                    }
                     notes = asset.notes
                 }
             }
@@ -202,6 +241,8 @@ public struct AddEditAssetSheet: View {
         let targetDaily = Double(targetDailyString)
         let marketPrice = Double(marketPriceString)
         let useCount = Int(useCountString) ?? 1
+        let soldPrice = (status == .sold) ? Double(soldPriceString) : nil
+        let finalSoldDate = (status == .sold) ? soldDate : nil
         let tags = tagsString
             .components(separatedBy: CharacterSet(charactersIn: ",， "))
             .filter { !$0.isEmpty }
@@ -214,6 +255,8 @@ public struct AddEditAssetSheet: View {
             asset.tags = tags
             asset.iconName = iconName
             asset.status = status
+            asset.soldPrice = soldPrice
+            asset.soldDate = finalSoldDate
             asset.rule = rule
             asset.useCount = useCount
             asset.targetDailyCost = targetDaily
@@ -235,6 +278,8 @@ public struct AddEditAssetSheet: View {
                 rule: rule,
                 useCount: useCount,
                 targetDailyCost: targetDaily,
+                soldDate: finalSoldDate,
+                soldPrice: soldPrice,
                 marketPrice: marketPrice,
                 isPinned: isPinned,
                 excludeFromTotalAssets: excludeFromTotalAssets,

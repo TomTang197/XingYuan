@@ -53,22 +53,33 @@ public struct AssetTableView: View {
             }
             .width(min: 75, ideal: 85)
             
-            TableColumn("价格 / 回血") { asset in
-                if asset.status == .sold, let soldPrice = asset.soldPrice {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("买 ¥\(Int(asset.price))")
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(.secondary)
-                        Text("卖 ¥\(Int(soldPrice))")
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundColor(.orange)
+            TableColumn("原价 / 二手卖出价") { asset in
+                if asset.status == .sold {
+                    if let soldPrice = asset.soldPrice {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("买入 ¥\(Int(asset.price))")
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundColor(.secondary)
+                            Text("卖出 ¥\(Int(soldPrice))")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(.orange)
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("买入 ¥\(Int(asset.price))")
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundColor(.secondary)
+                            Text("待录入卖出价")
+                                .font(.system(size: 10))
+                                .foregroundColor(.orange)
+                        }
                     }
                 } else {
                     Text("¥\(String(format: "%.2f", asset.price))")
                         .font(.system(size: 12, design: .monospaced))
                 }
             }
-            .width(min: 90, ideal: 110)
+            .width(min: 110, ideal: 125)
             
             TableColumn("服役天数") { asset in
                 let days = AssetCalculator.daysInService(for: asset)

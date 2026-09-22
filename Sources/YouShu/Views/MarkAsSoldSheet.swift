@@ -57,7 +57,7 @@ public struct MarkAsSoldSheet: View {
                 
                 // 输入表单
                 Form {
-                    TextField("二手售出回血金额 (¥)", text: $soldPriceString)
+                    TextField("二手卖出价 (¥)", text: $soldPriceString)
                         .textFieldStyle(.roundedBorder)
                     DatePicker("卖出成交日期", selection: $soldDate, displayedComponents: .date)
                 }
@@ -150,7 +150,7 @@ public struct MarkAsSoldSheet: View {
                     
                     Spacer()
                     
-                    Button("确认出清卖出") {
+                    Button(asset.status == .sold ? "保存二手卖出价" : "确认出清卖出") {
                         onConfirm(enteredSoldPrice, soldDate)
                         dismiss()
                     }
@@ -160,7 +160,15 @@ public struct MarkAsSoldSheet: View {
                 }
             }
             .padding(18)
-            .navigationTitle("标记为已卖出")
+            .navigationTitle(asset.status == .sold ? "修改二手卖出价" : "标记为已卖出 (录入二手卖出价)")
+            .onAppear {
+                if let sp = asset.soldPrice {
+                    soldPriceString = String(format: "%.2f", sp)
+                }
+                if let sd = asset.soldDate {
+                    soldDate = sd
+                }
+            }
         }
         .frame(width: 440, height: 460)
     }

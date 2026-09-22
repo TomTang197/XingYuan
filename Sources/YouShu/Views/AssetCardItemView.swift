@@ -73,9 +73,14 @@ public struct AssetCardItemView: View {
                         .lineLimit(1)
                     
                     HStack(spacing: 5) {
-                        if asset.status == .sold, let soldPrice = asset.soldPrice {
-                            Text("买 ¥\(Int(asset.price)) ➔ 卖 ¥\(Int(soldPrice))")
-                                .foregroundColor(Color.orange)
+                        if asset.status == .sold {
+                            if let soldPrice = asset.soldPrice {
+                                Text("买 ¥\(Int(asset.price)) ➔ 卖 ¥\(Int(soldPrice))")
+                                    .foregroundColor(Color.orange)
+                            } else {
+                                Text("买 ¥\(Int(asset.price)) ➔ 卖出待录入")
+                                    .foregroundColor(Color.orange)
+                            }
                             Text("|")
                                 .foregroundColor(Color(nsColor: .separatorColor))
                             Text("\(days)\(asset.rule.unitName)")

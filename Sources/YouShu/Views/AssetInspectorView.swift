@@ -75,7 +75,7 @@ public struct AssetInspectorView: View {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     if asset.status == .sold {
                         metricBox(title: "累计投入", value: "¥\(String(format: "%.2f", gross))", color: .primary)
-                        metricBox(title: "二手回血", value: "¥\(String(format: "%.2f", asset.soldPrice ?? 0.0))", color: .orange)
+                        metricBox(title: "二手卖出价", value: "¥\(String(format: "%.2f", asset.soldPrice ?? 0.0))", color: .orange)
                         metricBox(title: "净沉没损益", value: "¥\(String(format: "%.2f", net))", color: net < 0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : (net == 0 ? .blue : .primary))
                         metricBox(title: "最终结清日均", value: "¥\(String(format: "%.2f", daily))\(asset.rule.unitString)", color: daily < 0 ? Color(red: 0.46, green: 0.82, blue: 0.12) : (daily == 0 ? .blue : Color(red: 0.90, green: 0.60, blue: 0.15)))
                     } else {
@@ -354,6 +354,20 @@ public struct AssetInspectorView: View {
                         }
                         .buttonStyle(.bordered)
                     } else {
+                        if asset.status == .sold {
+                            Button {
+                                onMarkAsSold()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "banknote")
+                                    Text("修改二手卖出价 / 售出日期")
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.orange)
+                        }
+                        
                         Button {
                             asset.status = .active
                             asset.retiredDate = nil
