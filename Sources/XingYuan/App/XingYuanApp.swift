@@ -48,6 +48,14 @@ struct XingYuanApp: App {
             SidebarCommands()
         }
         
+        Window("星元 · 桌面小组件", id: "desktop-widget") {
+            DesktopFloatingWidgetView()
+                .modelContainer(sharedModelContainer)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .defaultPosition(.bottomTrailing)
+        
         #if os(macOS)
         MenuBarExtra {
             MenuBarView()

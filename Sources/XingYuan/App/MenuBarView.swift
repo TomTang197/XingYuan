@@ -103,12 +103,19 @@ public struct MenuBarView: View {
             Divider()
             
             // 底部操作
-            HStack {
+            HStack(spacing: 8) {
                 Button("打开主窗口") {
                     openWindow(id: "main")
                     NSApplication.shared.activate(ignoringOtherApps: true)
                 }
                 .buttonStyle(.borderedProminent)
+                
+                Button {
+                    openWindow(id: "desktop-widget")
+                } label: {
+                    Label("桌面组件", systemImage: "widget.small")
+                }
+                .buttonStyle(.bordered)
                 
                 Spacer()
                 

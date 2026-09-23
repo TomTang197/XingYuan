@@ -3,6 +3,7 @@ import SwiftData
 
 public struct MainView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.openWindow) private var openWindow
     @Query private var allAssets: [AssetItem]
     
     @State private var sidebarSelection: SidebarDestination = .status(.active)
@@ -281,6 +282,15 @@ public struct MainView: View {
                     Label("新增资产", systemImage: "plus")
                 }
                 .keyboardShortcut("n", modifiers: .command)
+            }
+            
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    openWindow(id: "desktop-widget")
+                } label: {
+                    Label("桌面小组件", systemImage: "widget.small")
+                }
+                .help("在桌面常驻小组件")
             }
             
             ToolbarItem(placement: .automatic) {

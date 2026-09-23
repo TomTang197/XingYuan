@@ -107,6 +107,10 @@ cat <<EOF > "$WIDGET_CONTENTS_DIR/Info.plist"
     <string>1.0.0</string>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>MacOSX</string>
+    </array>
     <key>NSExtension</key>
     <dict>
         <key>NSExtensionPointIdentifier</key>
@@ -116,11 +120,25 @@ cat <<EOF > "$WIDGET_CONTENTS_DIR/Info.plist"
 </plist>
 EOF
 
-echo "🔏 Code signing $APP_NAME.app and extensions..."
-codesign --force --deep --sign - "$APP_DIR"
+echo "🔏 Code signing extensions with sandbox entitlements..."
+codesign --force --sign - --entitlements "$DIR/scripts/widget.entitlements" "$WIDGET_APPEX_DIR"
+
+echo "🔏 Code signing $APP_NAME.app..."
+codesign --force --sign - "$APP_DIR"
+
+echo "📂 Installing $APP_NAME.app to /Applications for system widget discovery..."
+rm -rf "/Applications/$APP_NAME.app"
+cp -R "$APP_DIR" "/Applications/$APP_NAME.app"
+
+INSTALLED_APP="/Applications/$APP_NAME.app"
+INSTALLED_WIDGET="$INSTALLED_APP/Contents/PlugIns/$WIDGET_NAME.appex"
 
 echo "📡 Registering bundle with LaunchServices and PlugInKit..."
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP_DIR" || true
-pluginkit -a "$WIDGET_APPEX_DIR" || true
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$INSTALLED_APP" || true
+pluginkit -A -a "$INSTALLED_WIDGET" || true
+pluginkit -e use -i com.xingyuan.costperday.widget || true
 
-echo "✅ $APP_NAME.app bundle successfully created with native WidgetKit Extension at: $APP_DIR"
+# Refresh chronod to pick up the new widget
+killall -9 chronod 2>/dev/null || true
+
+echo "✅ $APP_NAME.app bundle successfully installed to /Applications with native WidgetKit Extension"
