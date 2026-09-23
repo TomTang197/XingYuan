@@ -36,6 +36,6 @@ struct XingYuanWidget: Widget {
         }
         .configurationDisplayName("星元")
         .description("实时追踪今日在役资产总日均与物超所值单品。")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }

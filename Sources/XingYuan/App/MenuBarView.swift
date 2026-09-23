@@ -65,9 +65,9 @@ public struct MenuBarView: View {
             .padding(10)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .controlBackgroundColor)))
             
-            // 物尽其用 Top 3 (日均摊薄最极致的物品)
+            // 物尽其用 Top 5 (日均摊薄最极致的物品)
             VStack(alignment: .leading, spacing: 6) {
-                Text("物超所值 Top 3")
+                Text("物超所值 Top 5")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
@@ -77,10 +77,15 @@ public struct MenuBarView: View {
                         .foregroundColor(.secondary)
                         .padding(.vertical, 4)
                 } else {
-                    ForEach(activeAssets.prefix(3)) { item in
+                    ForEach(Array(activeAssets.prefix(5).enumerated()), id: \.element.id) { index, item in
                         let days = AssetCalculator.daysInService(for: item)
                         let daily = AssetCalculator.dailyCost(for: item)
                         HStack(spacing: 8) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundColor(index < 3 ? Color(red: 0.20, green: 0.70, blue: 0.10) : .secondary)
+                                .frame(width: 12, alignment: .center)
+                            
                             Image(systemName: item.iconName)
                                 .foregroundColor(item.status.color)
                                 .frame(width: 16)
@@ -121,6 +126,6 @@ public struct MenuBarView: View {
             }
         }
         .padding(16)
-        .frame(width: 290)
+        .frame(width: 300)
     }
 }

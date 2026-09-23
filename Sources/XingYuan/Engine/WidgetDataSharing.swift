@@ -10,7 +10,7 @@ public enum WidgetDataSharing {
             .filter { $0.status == .active }
             .sorted { AssetCalculator.dailyCost(for: $0) < AssetCalculator.dailyCost(for: $1) }
         
-        let topAssets: [WidgetAssetItem] = activeItems.prefix(3).map { item in
+        let topAssets: [WidgetAssetItem] = activeItems.prefix(5).map { item in
             WidgetAssetItem(
                 id: item.id,
                 name: item.name,

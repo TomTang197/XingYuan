@@ -58,7 +58,9 @@ public struct WidgetSnapshotData: Codable {
             topAssets: [
                 WidgetAssetItem(name: "爱否 F1", iconName: "cube.box.fill", daysInService: 2683, dailyCost: 0.06, category: "居家"),
                 WidgetAssetItem(name: "AirPods pro 2", iconName: "airpodspro", daysInService: 1784, dailyCost: 0.97, category: "影音"),
-                WidgetAssetItem(name: "Hagis 380w", iconName: "powerplug.fill", daysInService: 85, dailyCost: 4.12, category: "数码")
+                WidgetAssetItem(name: "Hagis 380w", iconName: "powerplug.fill", daysInService: 85, dailyCost: 4.12, category: "数码"),
+                WidgetAssetItem(name: "iPad pro m1", iconName: "ipad", daysInService: 1473, dailyCost: 5.80, category: "数码"),
+                WidgetAssetItem(name: "iPhone 13 Pro Max", iconName: "iphone", daysInService: 1796, dailyCost: 6.57, category: "数码")
             ],
             updatedAt: Date()
         )
