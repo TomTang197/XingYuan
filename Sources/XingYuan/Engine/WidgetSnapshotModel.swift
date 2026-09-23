@@ -51,14 +51,14 @@ public struct WidgetSnapshotData: Codable {
     
     public static var placeholder: WidgetSnapshotData {
         WidgetSnapshotData(
-            totalDailyCost: 685.42,
+            totalDailyCost: 669.09,
             totalAssetValue: 82149.99,
             activeCount: 8,
             totalCount: 10,
             topAssets: [
-                WidgetAssetItem(name: "Sony A7M4", iconName: "camera.fill", daysInService: 450, dailyCost: 35.5, category: "数码"),
-                WidgetAssetItem(name: "MacBook Pro", iconName: "laptopcomputer", daysInService: 280, dailyCost: 42.8, category: "办公"),
-                WidgetAssetItem(name: "Hermes 表带", iconName: "applewatch", daysInService: 120, dailyCost: 15.0, category: "穿搭")
+                WidgetAssetItem(name: "爱否 F1", iconName: "cube.box.fill", daysInService: 2683, dailyCost: 0.06, category: "居家"),
+                WidgetAssetItem(name: "AirPods pro 2", iconName: "airpodspro", daysInService: 1784, dailyCost: 0.97, category: "影音"),
+                WidgetAssetItem(name: "Hagis 380w", iconName: "powerplug.fill", daysInService: 85, dailyCost: 4.12, category: "数码")
             ],
             updatedAt: Date()
         )
@@ -66,10 +66,19 @@ public struct WidgetSnapshotData: Codable {
 }
 
 public enum WidgetDataReader {
+    public static var containerDocumentsURL: URL {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        return home.appendingPathComponent("Library/Containers/com.xingyuan.costperday.desktopwidget/Data/Documents", isDirectory: true)
+    }
+    
     public static var sharedFileURL: URL {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dir = appSupport.appendingPathComponent("XingYuan", isDirectory: true)
-        return dir.appendingPathComponent("widget_data.json")
+        if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let path = docs.appendingPathComponent("widget_data.json")
+            if FileManager.default.fileExists(atPath: path.path) {
+                return path
+            }
+        }
+        return containerDocumentsURL.appendingPathComponent("widget_data.json")
     }
     
     public static func readSnapshot() -> WidgetSnapshotData {

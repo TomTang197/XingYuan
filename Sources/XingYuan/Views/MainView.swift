@@ -286,15 +286,6 @@ public struct MainView: View {
             
             ToolbarItem(placement: .automatic) {
                 Button {
-                    openWindow(id: "desktop-widget")
-                } label: {
-                    Label("桌面小组件", systemImage: "widget.small")
-                }
-                .help("在桌面常驻小组件")
-            }
-            
-            ToolbarItem(placement: .automatic) {
-                Button {
                     withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
                         showInspector.toggle()
                     }

@@ -15,7 +15,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "XingYuan",
-            path: "Sources/XingYuan"
+            path: "Sources/XingYuan",
+            exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "XingYuanTests",

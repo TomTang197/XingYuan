@@ -28,14 +28,14 @@ struct XingYuanProvider: TimelineProvider {
 }
 
 struct XingYuanWidget: Widget {
-    let kind: String = "com.xingyuan.costperday.widget"
+    let kind: String = "XingYuanDesktopWidget"
     
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: XingYuanProvider()) { entry in
             XingYuanWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("星元追踪")
-        .description("无需打开应用，实时追踪今日在役资产总日均与物超所值物品。")
+        .configurationDisplayName("星元")
+        .description("实时追踪今日在役资产总日均与物超所值单品。")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

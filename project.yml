@@ -1,0 +1,51 @@
+name: XingYuan
+options:
+  bundleIdPrefix: com.xingyuan
+  deploymentTarget:
+    macOS: "14.0"
+targets:
+  XingYuan:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources/XingYuan
+        excludes:
+          - "Info.plist"
+    dependencies:
+      - target: XingYuanWidget
+        embed: true
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.xingyuan.costperday
+      PRODUCT_NAME: XingYuan
+      INFOPLIST_FILE: Sources/XingYuan/Info.plist
+      GENERATE_INFOPLIST_FILE: NO
+      ENABLE_HARDENED_RUNTIME: YES
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: 54FJ436XYL
+      CODE_SIGN_IDENTITY: "Apple Development"
+      CODE_SIGN_ENTITLEMENTS: scripts/app.entitlements
+
+  XingYuanWidget:
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources/XingYuanWidget
+        excludes:
+          - "Info.plist"
+      - path: Sources/XingYuan/Engine/WidgetSnapshotModel.swift
+    frameworks:
+      - framework: WidgetKit
+      - framework: SwiftUI
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.xingyuan.costperday.desktopwidget
+      PRODUCT_NAME: XingYuanWidget
+      INFOPLIST_FILE: Sources/XingYuanWidget/Info.plist
+      GENERATE_INFOPLIST_FILE: NO
+      ENABLE_HARDENED_RUNTIME: YES
+      SKIP_INSTALL: YES
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: 54FJ436XYL
+      CODE_SIGN_IDENTITY: "Apple Development"
+      CODE_SIGN_ENTITLEMENTS: scripts/widget.entitlements

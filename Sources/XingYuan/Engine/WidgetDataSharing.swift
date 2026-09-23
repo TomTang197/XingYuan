@@ -36,14 +36,14 @@ public enum WidgetDataSharing {
         WidgetCenter.shared.reloadAllTimelines()
     }
     
-    /// 将快照写入共享存储
+    /// 将快照写入小组件容器存储
     public static func saveSnapshot(_ snapshot: WidgetSnapshotData) {
         do {
-            let fileURL = WidgetDataReader.sharedFileURL
-            let dir = fileURL.deletingLastPathComponent()
+            let dir = WidgetDataReader.containerDocumentsURL
             if !FileManager.default.fileExists(atPath: dir.path) {
                 try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             }
+            let fileURL = dir.appendingPathComponent("widget_data.json")
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .iso8601
             let data = try encoder.encode(snapshot)
