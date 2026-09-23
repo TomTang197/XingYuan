@@ -1,8 +1,26 @@
 import SwiftUI
 import SwiftData
+import AppKit
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            for window in sender.windows where !(window is NSPanel) {
+                window.makeKeyAndOrderFront(nil)
+                return true
+            }
+            if let url = URL(string: "xingyuan://open") {
+                NSWorkspace.shared.open(url)
+            }
+        }
+        return true
+    }
+}
 
 @main
-struct YouShuApp: App {
+struct XingYuanApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     private var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             AssetItem.self,
@@ -17,10 +35,12 @@ struct YouShuApp: App {
     }()
     
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             MainView()
                 .frame(minWidth: 850, minHeight: 560)
+                .handlesExternalEvents(preferring: ["main", "open"], allowing: ["*"])
         }
+        .handlesExternalEvents(matching: ["main", "open", "*"])
         .modelContainer(sharedModelContainer)
         .defaultSize(width: 1100, height: 720)
         .windowToolbarStyle(.unified)
@@ -29,8 +49,11 @@ struct YouShuApp: App {
         }
         
         #if os(macOS)
-        MenuBarExtra("有数", systemImage: "bolt.circle.fill") {
+        MenuBarExtra {
             MenuBarView()
+                .modelContainer(sharedModelContainer)
+        } label: {
+            MenuBarLabelView()
                 .modelContainer(sharedModelContainer)
         }
         .menuBarExtraStyle(.window)

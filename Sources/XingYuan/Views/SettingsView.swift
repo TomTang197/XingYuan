@@ -67,11 +67,11 @@ public struct SettingsView: View {
                 }
             }
             
-            Section("关于 有数 (YouShu) Mac 版") {
+            Section("关于 星元 (XingYuan) Mac 版") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("有数 (YouShu) - 个人资产日均成本追踪工具")
+                    Text("星元 (XingYuan) - 个人资产与日均成本精算管理")
                         .font(.headline)
-                    Text("核心理念：物尽其用，买得贵不如用得久。")
+                    Text("核心理念：物尽其用，星火汇元。买得贵不如用得久。")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text("数据完全存储于本地 SwiftData 数据库，离线优先，零隐私泄露风险。")

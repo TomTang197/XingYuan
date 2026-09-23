@@ -157,6 +157,10 @@ public struct MainView: View {
         }
         .onAppear {
             SampleData.loadSampleDataIfNeeded(context: modelContext)
+            WidgetDataSharing.syncSnapshot(from: allAssets)
+        }
+        .onChange(of: allAssets) { _, newAssets in
+            WidgetDataSharing.syncSnapshot(from: newAssets)
         }
     }
     

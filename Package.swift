@@ -2,25 +2,25 @@
 import PackageDescription
 
 let package = Package(
-    name: "YouShu",
+    name: "XingYuan",
     platforms: [
         .macOS(.v14)
     ],
     products: [
         .executable(
-            name: "YouShu",
-            targets: ["YouShu"]
+            name: "XingYuan",
+            targets: ["XingYuan"]
         )
     ],
     targets: [
         .executableTarget(
-            name: "YouShu",
-            path: "Sources/YouShu"
+            name: "XingYuan",
+            path: "Sources/XingYuan"
         ),
         .testTarget(
-            name: "YouShuTests",
-            dependencies: ["YouShu"],
-            path: "Tests/YouShuTests"
+            name: "XingYuanTests",
+            dependencies: ["XingYuan"],
+            path: "Tests/XingYuanTests"
         )
     ]
 )

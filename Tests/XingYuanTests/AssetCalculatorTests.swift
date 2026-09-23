@@ -1,5 +1,5 @@
 import XCTest
-@testable import YouShu
+@testable import XingYuan
 
 final class AssetCalculatorTests: XCTestCase {
     private let calendar = Calendar.current
