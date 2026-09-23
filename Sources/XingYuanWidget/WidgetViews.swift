@@ -114,10 +114,10 @@ struct MediumWidgetView: View {
     var body: some View {
         let items = data.sortedAssets(for: sortRule, limit: 5)
         
-        HStack(spacing: 12) {
-            // Left Column: Overview
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 4) {
+        HStack(spacing: 10) {
+            // Left Column: Compact Overview (~30% width)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 3) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(Color(red: 0.46, green: 0.82, blue: 0.12))
@@ -127,38 +127,50 @@ struct MediumWidgetView: View {
                 
                 Spacer(minLength: 0)
                 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("今日在役总日均")
-                        .font(.system(size: 10))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("今日总日均")
+                        .font(.system(size: 9.5))
                         .foregroundColor(.secondary)
-                    Text("¥\(String(format: "%.2f", data.totalDailyCost))/天")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                    HStack(alignment: .firstTextBaseline, spacing: 1) {
+                        Text("¥\(String(format: "%.2f", data.totalDailyCost))")
+                            .font(.system(size: 16.5, weight: .bold, design: .rounded))
+                            .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                            .minimumScaleFactor(0.8)
+                            .lineLimit(1)
+                        Text("/天")
+                            .font(.system(size: 8.5))
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 Spacer(minLength: 0)
                 
-                HStack {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("在役 ¥\(Int(data.totalAssetValue))")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                    Text("·")
-                        .foregroundColor(.secondary)
-                    Text("\(data.activeCount) 件")
-                        .font(.system(size: 10))
+                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                    Text("\(data.activeCount) 件资产")
+                        .font(.system(size: 8.5))
                         .foregroundColor(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(width: 95, alignment: .leading)
             
             Divider()
+                .padding(.vertical, 2)
             
-            // Right Column: Top 5 Assets according to Sort Rule
+            // Right Column: Expanded Top 5 Assets (~70% width)
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
                     Text(sortRule.topTitle)
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                     Spacer()
+                    Text(sortRule.subtitle)
+                        .font(.system(size: 8.5))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
                 .padding(.bottom, 1)
                 
@@ -177,28 +189,43 @@ struct MediumWidgetView: View {
                                 .frame(width: 8, alignment: .center)
                             
                             Image(systemName: item.iconName)
-                                .font(.system(size: 9))
+                                .font(.system(size: 9.5))
                                 .foregroundColor(.secondary)
-                                .frame(width: 10)
+                                .frame(width: 11)
                             
                             Text(item.name)
-                                .font(.system(size: 9.5, weight: .medium))
+                                .font(.system(size: 10, weight: .medium))
                                 .lineLimit(1)
                             
-                            Spacer(minLength: 2)
+                            Spacer(minLength: 4)
                             
                             if sortRule == .highestPrice || sortRule == .lowestPrice {
-                                Text("¥\(Int(item.price))")
-                                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.primary)
+                                HStack(spacing: 2) {
+                                    Text("¥\(Int(item.price))")
+                                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.primary)
+                                    Text("·¥\(String(format: "%.1f", item.dailyCost))/天")
+                                        .font(.system(size: 8))
+                                        .foregroundColor(.secondary)
+                                }
                             } else if sortRule == .newest {
-                                Text("\(item.daysInService)天前")
-                                    .font(.system(size: 9, weight: .medium))
-                                    .foregroundColor(.secondary)
+                                HStack(spacing: 3) {
+                                    Text("\(item.daysInService)天前")
+                                        .font(.system(size: 8.5))
+                                        .foregroundColor(.secondary)
+                                    Text("¥\(String(format: "%.2f", item.dailyCost))/天")
+                                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                                        .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                                }
                             } else if sortRule == .oldest {
-                                Text("\(item.daysInService)天")
-                                    .font(.system(size: 9, weight: .medium))
-                                    .foregroundColor(.secondary)
+                                HStack(spacing: 3) {
+                                    Text("\(item.daysInService)天")
+                                        .font(.system(size: 8.5))
+                                        .foregroundColor(.secondary)
+                                    Text("¥\(String(format: "%.2f", item.dailyCost))/天")
+                                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                                        .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                                }
                             } else {
                                 Text("¥\(String(format: "%.2f", item.dailyCost))/天")
                                     .font(.system(size: 9.5, weight: .semibold, design: .rounded))
