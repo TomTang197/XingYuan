@@ -19,14 +19,30 @@ public struct MenuBarLabelView: View {
 public struct MenuBarView: View {
     @Query private var assets: [AssetItem]
     @Environment(\.openWindow) private var openWindow
+    @AppStorage("menuBarSortRule") private var sortRule: WidgetSortRule = .lowestDaily
     
     public init() {}
     
     public var body: some View {
         let stats = AssetCalculator.calculateOverview(assets: assets, filterStatus: .active)
-        let activeAssets = assets
-            .filter { $0.status == .active }
-            .sorted { AssetCalculator.dailyCost(for: $0) < AssetCalculator.dailyCost(for: $1) }
+        let activeAssets = assets.filter { $0.status == .active }
+        
+        let sortedAssets: [AssetItem] = {
+            switch sortRule {
+            case .lowestDaily:
+                return activeAssets.sorted { AssetCalculator.dailyCost(for: $0) < AssetCalculator.dailyCost(for: $1) }
+            case .highestDaily:
+                return activeAssets.sorted { AssetCalculator.dailyCost(for: $0) > AssetCalculator.dailyCost(for: $1) }
+            case .newest:
+                return activeAssets.sorted { $0.purchaseDate > $1.purchaseDate }
+            case .oldest:
+                return activeAssets.sorted { $0.purchaseDate < $1.purchaseDate }
+            case .highestPrice:
+                return activeAssets.sorted { $0.price > $1.price }
+            case .lowestPrice:
+                return activeAssets.sorted { $0.price < $1.price }
+            }
+        }()
         
         VStack(alignment: .leading, spacing: 14) {
             // Header
@@ -65,19 +81,33 @@ public struct MenuBarView: View {
             .padding(10)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .controlBackgroundColor)))
             
-            // 物尽其用 Top 5 (日均摊薄最极致的物品)
+            // 排行榜区域：动态规则与选择器
             VStack(alignment: .leading, spacing: 6) {
-                Text("物超所值 Top 5")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack {
+                    Text(sortRule.topTitle)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Picker("", selection: $sortRule) {
+                        ForEach(WidgetSortRule.allCases, id: \.self) { rule in
+                            Text(rule.shortTitle).tag(rule)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .scaleEffect(0.85)
+                    .frame(width: 90)
+                }
                 
-                if activeAssets.isEmpty {
+                if sortedAssets.isEmpty {
                     Text("暂无在役资产")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .padding(.vertical, 4)
                 } else {
-                    ForEach(Array(activeAssets.prefix(5).enumerated()), id: \.element.id) { index, item in
+                    ForEach(Array(sortedAssets.prefix(5).enumerated()), id: \.element.id) { index, item in
                         let days = AssetCalculator.daysInService(for: item)
                         let daily = AssetCalculator.dailyCost(for: item)
                         HStack(spacing: 8) {
@@ -93,12 +123,29 @@ public struct MenuBarView: View {
                                 .font(.system(size: 12))
                                 .lineLimit(1)
                             Spacer()
-                            Text("\(days)天")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                            Text("¥\(String(format: "%.2f", daily))/天")
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                            
+                            if sortRule == .highestPrice || sortRule == .lowestPrice {
+                                Text("¥\(Int(item.price))")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("¥\(String(format: "%.2f", daily))/天")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                            } else if sortRule == .highestDaily {
+                                Text("\(days)天")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("¥\(String(format: "%.2f", daily))/天")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color.orange)
+                            } else {
+                                Text("\(days)天")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("¥\(String(format: "%.2f", daily))/天")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Color(red: 0.20, green: 0.70, blue: 0.10))
+                            }
                         }
                         .padding(.vertical, 2)
                     }
@@ -126,6 +173,9 @@ public struct MenuBarView: View {
             }
         }
         .padding(16)
-        .frame(width: 300)
+        .frame(width: 310)
+        .onChange(of: sortRule) { _, newRule in
+            WidgetDataSharing.syncSnapshot(from: assets, defaultSortRule: newRule)
+        }
     }
 }

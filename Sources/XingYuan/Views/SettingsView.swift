@@ -11,6 +11,7 @@ public struct SettingsView: View {
     @AppStorage("decimalPlaces") private var decimalPlaces: Int = 2
     @AppStorage("useThousandsSeparator") private var useThousandsSeparator: Bool = true
     @AppStorage("defaultViewMode") private var defaultViewMode: String = "grid"
+    @AppStorage("menuBarSortRule") private var menuBarSortRule: WidgetSortRule = .lowestDaily
     
     @State private var alertMessage: String?
     @State private var showAlert: Bool = false
@@ -65,6 +66,21 @@ public struct SettingsView: View {
                     Text("卡片网格模式 (Card Grid)").tag("grid")
                     Text("表格清单模式 (Table View)").tag("table")
                 }
+            }
+            
+            Section("小组件与菜单栏偏好") {
+                Picker("默认展示排序规则", selection: $menuBarSortRule) {
+                    ForEach(WidgetSortRule.allCases, id: \.self) { rule in
+                        Text(rule.shortTitle).tag(rule)
+                    }
+                }
+                .onChange(of: menuBarSortRule) { _, newRule in
+                    WidgetDataSharing.syncSnapshot(from: assets, defaultSortRule: newRule)
+                }
+                
+                Text("提示：在 Mac 桌面壁纸上直接右键点击小组件并选择「编辑“星元”」，亦可针对单个桌面小组件独立配置专属排序。")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
             
             Section("关于 星元 (XingYuan) Mac 版") {

@@ -3,30 +3,48 @@ import WidgetKit
 
 public enum WidgetDataSharing {
     /// 从当前资产库生成快照并持久化，同时通知 WidgetKit 刷新
-    public static func syncSnapshot(from assets: [AssetItem]) {
+    public static func syncSnapshot(from assets: [AssetItem], defaultSortRule: WidgetSortRule = .lowestDaily) {
         let stats = AssetCalculator.calculateOverview(assets: assets, filterStatus: .active)
         
-        let activeItems = assets
-            .filter { $0.status == .active }
-            .sorted { AssetCalculator.dailyCost(for: $0) < AssetCalculator.dailyCost(for: $1) }
+        let activeItems = assets.filter { $0.status == .active }
         
-        let topAssets: [WidgetAssetItem] = activeItems.prefix(5).map { item in
+        let allActiveWidgets: [WidgetAssetItem] = activeItems.map { item in
             WidgetAssetItem(
                 id: item.id,
                 name: item.name,
                 iconName: item.iconName,
                 daysInService: AssetCalculator.daysInService(for: item),
                 dailyCost: AssetCalculator.dailyCost(for: item),
+                price: item.price,
+                purchaseDate: item.purchaseDate,
                 category: item.category
             )
         }
+        
+        let sortedTop = activeItems
+            .sorted { AssetCalculator.dailyCost(for: $0) < AssetCalculator.dailyCost(for: $1) }
+            .prefix(5)
+            .map { item in
+                WidgetAssetItem(
+                    id: item.id,
+                    name: item.name,
+                    iconName: item.iconName,
+                    daysInService: AssetCalculator.daysInService(for: item),
+                    dailyCost: AssetCalculator.dailyCost(for: item),
+                    price: item.price,
+                    purchaseDate: item.purchaseDate,
+                    category: item.category
+                )
+            }
         
         let snapshot = WidgetSnapshotData(
             totalDailyCost: stats.totalDailyCost,
             totalAssetValue: stats.totalAssetValue,
             activeCount: stats.activeCount,
             totalCount: assets.count,
-            topAssets: topAssets,
+            topAssets: sortedTop,
+            allActiveAssets: allActiveWidgets,
+            defaultSortRule: defaultSortRule,
             updatedAt: Date()
         )
         

@@ -38,6 +38,7 @@ targets:
     frameworks:
       - framework: WidgetKit
       - framework: SwiftUI
+      - framework: AppIntents
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.xingyuan.costperday.desktopwidget
       PRODUCT_NAME: XingYuanWidget
