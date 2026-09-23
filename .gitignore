@@ -1,7 +1,44 @@
+# Xcode & Swift Package Manager
 .build/
 .swiftpm/
 build/
 DerivedData/
-.DS_Store
 *.xcuserdata
+*.xcworkspace
 *.xcodeproj
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# User Data & Private Backups (DO NOT TRACK)
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.webp
+*.gif
+*.csv
+*.tsv
+widget_data.json
+*.sqlite*
+*.store*
+*.db*
+*.plist.backup
+
+# Keys, Certificates & Secrets
+*.cer
+*.p12
+*.mobileprovision
+*.provisionprofile
+*.key
+*.pem
+*.secret
+.env
+.env.*
+
+# Logs
+*.log
