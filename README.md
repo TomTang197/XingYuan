@@ -1,7 +1,9 @@
-# ✨ 星元 (XingYuan)
+English | [简体中文](README.zh-CN.md)
 
-> **物尽其用，星火汇元。买得贵不如用得久。**  
-> 原生 macOS 个人资产与日均成本精算管理工具，实时追踪物品摊薄成本，助你建立理性的消费观与物尽其用的生活哲学。
+# ✨ XingYuan (星元)
+
+> **Make every purchase count — longevity beats price tags.**  
+> A native macOS personal asset and daily cost amortization tracker that calculates the real amortized cost of your belongings in real time, helping you build mindful spending habits and get lasting value from everything you own.
 
 [![Platform](https://img.shields.io/badge/Platform-macOS%2014.0%2B-blue?logo=apple)](https://apple.com)
 [![Swift](https://img.shields.io/badge/Swift-6.4%20%7C%20SwiftUI-orange?logo=swift)](https://swift.org)
@@ -11,104 +13,105 @@
 
 ---
 
-## 🌟 核心功能特性
+## 🌟 Key Features
 
-### 1. 实时日均成本推算模型 (Daily Cost Amortization)
-- **每一天的价值看得见**：自动根据买入价格与服役天数（$D = \max(1, \text{Today} - \text{PurchaseDate})$）精准核算当前真实的日均使用成本：
+### 1. Real-Time Daily Cost Amortization
+- **See the value of every single day**: Automatically calculates your true daily ownership cost from the purchase price and days in service ($D = \max(1, \text{Today} - \text{PurchaseDate})$):
   $$\text{DailyCost} = \frac{P_{\text{buy}} + \sum \text{Expenses} - \sum \text{Incomes}}{D}$$
-- **目标价倒计时胶囊**：为资产设定心仪的日均目标价（例如每天 2 元），系统自动推算剩余回本天数与达成日期。
+- **Target Daily Cost Countdown**: Set a desired target daily cost for any item (e.g., ¥2/day), and XingYuan automatically calculates the remaining days and projected date to reach your goal.
 
-### 2. 二手出清多场景经济核算 (Sold Asset Economics)
-告别传统记账软件在二手转卖时的死板核算，星元支持 5 大真实出清场景：
-- **场景 1：折价卖出**（二手残值冲抵，真实核算在役期间的净折旧损益）。
-- **场景 2：平价全额回血**（二手卖出价等于投入，日均成本归零，达成「0元白嫖」）。
-- **场景 3：溢价理财盈利**（转卖价格高于买入投入，日均成本呈现负值，如 `¥-6.00/天`，在总资产中冲抵其他开销）。
-- **场景 4：零元出清 / 报废**（全额计入沉没成本出清）。
-- **场景 5：按次计费模式**（支持健身卡、门票等按次出清核算）。
+### 2. Multi-Scenario Resale & Disposal Economics
+Move beyond rigid bookkeeping when selling second-hand gear. XingYuan models 5 real-world exit scenarios:
+- **Scenario 1 — Discounted Resale**: Offsets resale proceeds against your total outlay to compute true net depreciation over active service.
+- **Scenario 2 — Break-Even Resale**: Resale price matches total outlay, bringing daily cost to zero ("zero-cost ownership").
+- **Scenario 3 — Profitable Flip**: Resale price exceeds total outlay, producing a negative daily cost (e.g., `¥-6.00/day`) that offsets overall portfolio spend.
+- **Scenario 4 — Zero-Value Disposal / Write-Off**: Accounts for the full outlay as a sunk cost upon retirement or scrap.
+- **Scenario 5 — Per-Use Billing Mode**: Supports usage-based amortization for gym memberships, passes, tickets, and similar items.
 
-### 3. 双层原生小组件系统 (Double-Tier Widgets)
-无需打开主窗口，随时随地掌握资产动态：
-- **屏幕顶部状态栏 (MenuBarExtra)**：常驻显示今日在役总日均，轻点弹出 Mini 看板查看 Top 5 单品明细并支持即时切换排序。
-- **macOS 原生壁纸桌面小组件 (WidgetKit Extension)**：严格遵循 Apple 规范打造的桌面壁纸小组件（支持 **Small 1×1**、**Medium 2×1**、**Large 2×2**），可直接拖放到桌面壁纸常驻运行。
+### 3. Dual-Tier Native Widget System
+Stay on top of your assets at a glance without even opening the main window:
+- **Menu Bar Live Tracker (`MenuBarExtra`)**: Shows your active portfolio's total daily cost right in the macOS menu bar; click to open a compact Mini Dashboard with your Top 5 items and instant sort switching.
+- **Native macOS Desktop Widgets (`WidgetKit` Extension)**: Built to Apple's native WidgetKit guidelines in **Small (1×1)**, **Medium (2×1)**, and **Large (2×2)** sizes — place them directly on your desktop wallpaper.
 
-### 4. 6 组多维度动态排序 (6 Customizable Ranking Rules)
-小组件与菜单栏提供 6 组多视角排行榜：
-- **最低每日 (物超所值)**：使用最充分、摊薄最极致的常青物品。
-- **最高每日 (耗资最大)**：日均消耗最高的大件，审视利用率是否充足。
-- **最新购买 (最新入手)**：按入手时间倒序，直观回顾新入装备。
-- **服役最久 (陪伴最长)**：按服役天数倒序，致敬陪伴岁月最久的物件。
-- **最高原价 (重资产配置)**：按买入原价降序，把握核心资产分布。
-- **最低原价 (超值小确幸)**：按买入原价升序，回顾高性价比好物。
-> 支持在桌面直接**右键点击小组件 ->「编辑“星元”」**独立配置单个组件视角！
+### 4. 6 Customizable Ranking Rules
+Both desktop widgets and the menu bar dashboard support 6 dynamic ranking perspectives:
+- **Lowest Daily Cost (Best Value)**: Your most thoroughly used, best-amortized everyday staples.
+- **Highest Daily Cost (Top Spend)**: Highest daily burn items, helping you evaluate utilization.
+- **Newest Purchases (Recent Additions)**: Sorted by most recent purchase date to review new gear at a glance.
+- **Longest in Service (Longest Companions)**: Sorted by days in service, celebrating your longest-lasting items.
+- **Highest Purchase Price (Core Assets)**: Sorted by original price descending to monitor major investments.
+- **Lowest Purchase Price (Budget Gems)**: Sorted by original price ascending to highlight high-value small finds.
+> **Per-Widget Configuration**: Right-click any desktop widget → **Edit "XingYuan"** (`编辑“星元”`) to configure each widget's sorting rule independently.
 
-### 5. 纯原生与隐私安全 (Privacy First)
-- **100% 离线优先**：零网络权限请求，不上传任何云端服务器。
-- **现代化技术栈**：纯原生 Swift 6、SwiftUI、SwiftData、Swift Charts 与 AppIntents 构建，内存占用极低（< 30MB），秒开无延时。
-- **自由备份与导出**：支持一键导出/恢复标准 JSON 全量备份，并支持导出 CSV 明细表格。
+### 5. Native Performance & Privacy First
+- **100% Offline-First**: Zero network permissions required; your data stays strictly on your Mac and is never uploaded to any server.
+- **Modern Apple Stack**: Built purely with native Swift 6, SwiftUI, SwiftData, Swift Charts, and AppIntents — lightweight (< 30 MB memory footprint) with instant launch.
+- **Open Backup & Export**: One-click full backup/restore in standard JSON format, plus CSV export for detailed spreadsheets.
 
 ---
 
-## 🛠 技术架构 (Architecture)
+## 🛠 Architecture
 
-```
-Sources/
-├── XingYuan/                  # 主应用 Target (macOS Application)
-│   ├── App/                   # App 入口生命周期、MenuBarExtra 状态栏看板
-│   ├── Engine/                # 资产核心精算模型 (AssetCalculator)、小组件数据共享快照
-│   ├── Models/                # SwiftData 数据模型 (AssetItem, WishItem, FinancialRecord)
-│   ├── Views/                 # 主界面、资产卡片、表格清单、检查器、趋势图表、设置
-│   └── Components/            # SF Symbols 图标挑选器、状态胶囊等通用组件
-│
-├── XingYuanWidget/            # 原生桌面小组件 Target (WidgetKit App Extension)
-│   ├── XingYuanWidgetBundle.swift   # 小组件注册入口
-│   ├── XingYuanWidget.swift         # Widget 配置 (Static & AppIntent 双架构)
-│   ├── XingYuanIntents.swift        # AppIntents 排序规则交互意图
-│   └── WidgetViews.swift            # Small / Medium / Large 规格 SwiftUI 渲染视图
+```text
+.
+├── Sources/
+│   ├── XingYuan/                        # Main macOS Application Target
+│   │   ├── App/                         # App lifecycle entry point & MenuBarExtra dashboard
+│   │   ├── Engine/                      # Core amortization engine (AssetCalculator) & widget snapshot sharing
+│   │   ├── Models/                      # SwiftData models (AssetItem, WishItem, FinancialRecord)
+│   │   ├── Views/                       # Main window, asset cards, table view, inspector, trends & settings
+│   │   └── Components/                  # Reusable UI components (SF Symbols picker, status badges, etc.)
+│   │
+│   └── XingYuanWidget/                  # Native Desktop Widget Target (WidgetKit App Extension)
+│       ├── XingYuanWidgetBundle.swift   # Widget bundle registration entry point
+│       ├── XingYuanWidget.swift         # Widget configuration (Static & AppIntent support)
+│       ├── XingYuanIntents.swift        # AppIntents configuration for interactive sorting rules
+│       └── WidgetViews.swift            # SwiftUI views for Small / Medium / Large widget families
 │
 └── Tests/
-    └── XingYuanTests/         # 算法精度与排序规则单元测试 (XCTest)
+    └── XingYuanTests/                   # Unit tests for calculation accuracy & widget sorting (XCTest)
 ```
 
 ---
 
-## 🚀 本地构建与运行指南 (Build & Run)
+## 🚀 Build & Run
 
-### 前置要求
-- macOS 14.0 (Sonoma) 或更高版本
+### Prerequisites
+- macOS 14.0 (Sonoma) or later
 - Xcode 15.0+ / Command Line Tools
-- [xcodegen](https://github.com/yonaskolb/XcodeGen) (推荐使用 `brew install xcodegen`)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (recommended: `brew install xcodegen`)
 
-### 快速一键构建安装
-克隆本仓库并在工程根目录下执行构建脚本：
+### Quick One-Command Build & Install
+Clone the repository and run the build script from the project root:
 
 ```bash
-# 1. 克隆仓库
+# 1. Clone the repository
 git clone https://github.com/TomTang197/XingYuan.git
 cd XingYuan
 
-# 2. 生成工程并构建打包 (包含主程序与 WidgetKit 扩展)
+# 2. Generate the project, build, and install (main app + WidgetKit extension)
 ./scripts/build_app.sh
 ```
 
-构建脚本会自动：
-1. 通过 `xcodegen generate` 生成标准 `XingYuan.xcodeproj`。
-2. 调用 `xcodebuild` 编译 Release 二进制并注入 Hardened Runtime 签名。
-3. 自动安装至 `/Applications/XingYuan.app`。
-4. 向 macOS 系统注册 `LaunchServices`、`PlugInKit` 并刷新 `chronod` 小组件守护进程。
+The build script automatically:
+1. Generates a standard `XingYuan.xcodeproj` via `xcodegen generate`.
+2. Builds the Release binary with `xcodebuild` and signs it with Hardened Runtime.
+3. Installs the bundle to `/Applications/XingYuan.app`.
+4. Registers the app and widget extension with `LaunchServices` and `PlugInKit`, and refreshes `chronod` so desktop widgets appear immediately.
 
-构建完成后，可以在 `/Applications` 或通过 Alfred / Raycast / Spotlight 启动 **星元**。
-
----
-
-## 🖥 如何添加桌面小组件
-
-1. 在 Mac 桌面壁纸空白处**点击右键**，选择 **「编辑小组件...」**。
-2. 在屏幕下方弹出的小组件库中找到 **「星元」**。
-3. 拖拽 **Small (小号)**、**Medium (中号)** 或 **Large (大号)** 放置在桌面壁纸任意位置。
-4. **自定义排序**：右键点击桌面上的小组件 -> 点击 **「编辑“星元”」**，即可自由切换 6 种排序规则！
+Once built, launch **XingYuan (`星元`)** from `/Applications` or via Spotlight, Raycast, or Alfred.
 
 ---
 
-## 📄 开源许可证
+## 🖥 Adding Desktop Widgets
 
-本项目采用 [MIT License](LICENSE) 开源许可证。欢迎提交 Issue 或 Pull Request 共同完善！
+1. **Right-click** an empty area on your Mac desktop and choose **Edit Widgets...**.
+2. Find **XingYuan (`星元`)** in the Widget Gallery.
+3. Drag the **Small**, **Medium**, or **Large** widget onto anywhere on your desktop.
+4. **Customize Sorting**: Right-click the desktop widget → click **Edit "XingYuan"** (`编辑“星元”`) to switch between all 6 sorting rules.
+
+---
+
+## 📄 License
+
+This project is open-sourced under the [MIT License](LICENSE). Issues and Pull Requests are always welcome!
